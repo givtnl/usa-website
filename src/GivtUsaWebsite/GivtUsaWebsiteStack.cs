@@ -60,7 +60,7 @@ namespace GivtUsaWebsite
                 DefaultBehavior = new BehaviorOptions
                 {
                     Origin = origin,
-                    ViewerProtocolPolicy = ViewerProtocolPolicy.HTTPS_ONLY,
+                    ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                     AllowedMethods = AllowedMethods.ALLOW_ALL,
                     Compress = true,
                     CachedMethods = CachedMethods.CACHE_GET_HEAD_OPTIONS,
