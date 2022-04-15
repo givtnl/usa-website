@@ -95,19 +95,20 @@ namespace GivtUsaWebsite
                 HeaderBehavior = OriginRequestHeaderBehavior.All(),
                 OriginRequestPolicyName = "custom-header-passed-nocache"
             });
-                
-                AddBehaviourForPath("/wp-login.php", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/wp-admin/*", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/wp-json/*", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/contact/", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/.well-known/*", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/wp-cron.php", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/xmlrpc.php", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/wp-trackback.php", cloudfront, origin, headerOptions, originRequestPolicy);
-                AddBehaviourForPath("/wp-signup.php", cloudfront, origin, headerOptions, originRequestPolicy);
-                
-            var bucket = new Bucket(this, "AssetsBucket", new BucketProps {
-                AccessControl =  BucketAccessControl.PRIVATE,
+
+            AddBehaviourForPath("/wp-login.php", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/wp-admin/*", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/wp-json/*", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/contact/", cloudfront, origin, headerOptions, originRequestPolicy);
+            // AddBehaviourForPath("/.well-known/*", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/wp-cron.php", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/xmlrpc.php", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/wp-trackback.php", cloudfront, origin, headerOptions, originRequestPolicy);
+            AddBehaviourForPath("/wp-signup.php", cloudfront, origin, headerOptions, originRequestPolicy);
+
+            var bucket = new Bucket(this, "AssetsBucket", new BucketProps
+            {
+                AccessControl = BucketAccessControl.PRIVATE,
                 Encryption = BucketEncryption.S3_MANAGED,
                 EnforceSSL = true,
                 PublicReadAccess = false,
@@ -119,11 +120,42 @@ namespace GivtUsaWebsite
             var originAccessForBucket = new OriginAccessIdentity(this, "MarketingUSABackupBucket");
 
             bucket.GrantRead(originAccessForBucket);
-        }
 
+            var s3HeaderOptions = new CachePolicy(this, "S3Headers", new CachePolicyProps
+            {
+                CachePolicyName = "custom-headers-passed-for-s3",
+                MinTtl = Duration.Days(30),
+                DefaultTtl = Duration.Days(45),
+                MaxTtl = Duration.Days(60),
+                QueryStringBehavior = CacheQueryStringBehavior.All(),
+                HeaderBehavior = CacheHeaderBehavior.AllowList("Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"),
+                CookieBehavior = CacheCookieBehavior.None()
+            });
+
+            AddS3BehaviourForPath(bucket, originAccessForBucket, "/apple-app-site-association", cloudfront, s3HeaderOptions);
+            AddS3BehaviourForPath(bucket, originAccessForBucket, "/.well-known/assetlinks.json", cloudfront, s3HeaderOptions);
+        }
+        private void AddS3BehaviourForPath(Bucket bucket, OriginAccessIdentity identity, string path,
+                    Distribution cloudFront, CachePolicy cachePolicy, string s3Path = null)
+        {
+            var origin = new S3Origin(bucket, new S3OriginProps
+            {
+                OriginAccessIdentity = identity,
+                OriginPath = s3Path
+            });
+
+            cloudFront.AddBehavior(path, origin, new BehaviorOptions
+            {
+                AllowedMethods = AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+                CachedMethods = CachedMethods.CACHE_GET_HEAD_OPTIONS,
+                ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                CachePolicy = cachePolicy,
+                Compress = true
+            });
+        }
         private void AddBehaviourForPath(string path, Distribution cloudfront, IOrigin origin, CachePolicy cachePolicy, IOriginRequestPolicy originRequestPolicy = null)
         {
-            
+
         }
     }
 }

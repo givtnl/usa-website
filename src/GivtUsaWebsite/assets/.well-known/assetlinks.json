@@ -1,0 +1,26 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "net.givtapp.droid2.pre",
+            "sha256_cert_fingerprints": [
+                "6F:4F:F5:1C:B6:D9:D0:63:07:CA:49:C9:A5:7C:13:F0:5F:F8:50:9F:0B:A4:3D:81:BC:AE:73:79:5D:B5:D7:EA"
+            ]
+        }
+    },
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "net.givtapp.droid2",
+            "sha256_cert_fingerprints": [
+                "6F:4F:F5:1C:B6:D9:D0:63:07:CA:49:C9:A5:7C:13:F0:5F:F8:50:9F:0B:A4:3D:81:BC:AE:73:79:5D:B5:D7:EA"
+            ]
+        }
+    }
+]
